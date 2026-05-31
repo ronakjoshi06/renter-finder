@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Owner Login</title>
+  <link rel="stylesheet" href="owner-login.css">
+</head>
+
+<body>
+  <div class="container">
+    
+    <div class="left">
+      <h2>APNA <br> GHAR</h2>
+      <p>
+        Access your properties and
+        tenant request
+      </p>
+    </div>
+
+    <div class="right">
+      <h3>Owner Login</h3>
+
+      <form id="loginForm">
+        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+        <input type="password" id="password" name="password" placeholder="Password" required>
+        <p id="errorMsg" style="color:red;"></p>
+
+        <!-- ✅ Button inside form -->
+        <button type="submit">Sign In</button>
+      </form>
+
+      <a href="#" class="forgot">Forgot password?</a>
+
+      <div class="or">or</div>
+
+      <button class="google">Sign in with Google</button>
+
+      <p class="signup">
+        Are you new? <a href="#">Create an Account</a>
+      </p>
+    </div>
+
+  </div>
+
+  <!-- ✅ Only this script needed -->
+  <script type="module" src="owner-login.js"></script>
+<script type="module" src="auth.js"></script>
+
+</body>
+</html>

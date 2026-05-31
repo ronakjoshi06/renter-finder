@@ -1,0 +1,362 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RentFinder</title>
+
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script>
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAyoaf_jIOe8pe9Po0pODC8OBjSaQyWE6k",
+  authDomain: "apnaghar-2668d.firebaseapp.com",
+  projectId: "apnaghar-2668d",
+  storageBucket: "apnaghar-2668d.firebasestorage.app",
+  messagingSenderId: "583440125091",
+  appId: "1:583440125091:web:69e8aa51f9be93513a4316"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
+
+</script>
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Inter,Arial,sans-serif;
+}
+
+body{
+background:#f5f7fb;
+height:100vh;
+overflow:hidden;
+}
+
+/* NAVBAR */
+
+.navbar{
+height:70px;
+background:white;
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 30px;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.logo{
+font-size:24px;
+font-weight:700;
+color:#ff7a18;
+}
+
+.nav-links{
+display:flex;
+gap:25px;
+}
+
+.nav-links a{
+text-decoration:none;
+color:#333;
+font-weight:500;
+}
+
+/* SEARCH */
+
+.search-section{
+padding:20px;
+background:white;
+}
+
+.search-box{
+max-width:900px;
+margin:auto;
+display:flex;
+gap:10px;
+}
+
+.search-box input{
+flex:1;
+padding:15px;
+border-radius:12px;
+border:1px solid #ddd;
+font-size:15px;
+}
+
+.search-box button{
+background:#ff7a18;
+color:white;
+border:none;
+padding:15px 25px;
+border-radius:12px;
+cursor:pointer;
+}
+
+/* MAIN */
+
+.main{
+display:flex;
+height:calc(100vh - 140px);
+}
+
+/* FILTERS */
+
+.filters{
+width:250px;
+background:white;
+padding:20px;
+overflow-y:auto;
+border-right:1px solid #eee;
+}
+
+.filters h3{
+margin-bottom:15px;
+}
+
+.filters select{
+width:100%;
+padding:12px;
+margin-bottom:15px;
+border-radius:10px;
+border:1px solid #ddd;
+}
+
+/* PROPERTIES */
+
+.properties{
+width:420px;
+background:#fafafa;
+padding:20px;
+overflow-y:auto;
+border-right:1px solid #eee;
+}
+
+.property-card{
+background:white;
+border-radius:16px;
+overflow:hidden;
+margin-bottom:20px;
+box-shadow:0 4px 12px rgba(0,0,0,.08);
+transition:.3s;
+}
+
+.property-card:hover{
+transform:translateY(-4px);
+}
+
+.property-card img{
+width:100%;
+height:180px;
+object-fit:cover;
+}
+
+.property-content{
+padding:15px;
+}
+
+.property-content h3{
+margin-bottom:8px;
+}
+
+.price{
+font-size:20px;
+font-weight:700;
+color:#ff7a18;
+margin-top:10px;
+}
+
+/* MAP */
+
+.map-area{
+flex:1;
+position:relative;
+}
+
+#map{
+height:100%;
+width:100%;
+}
+
+.map-badge{
+position:absolute;
+top:20px;
+left:50%;
+transform:translateX(-50%);
+background:#ff7a18;
+color:white;
+padding:10px 18px;
+border-radius:20px;
+z-index:999;
+font-size:14px;
+}
+
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+
+<div class="navbar">
+
+<div class="logo">
+🏠 RentFinder
+</div>
+
+<div class="nav-links">
+<a href="#">Home</a>
+<a href="#">Rent</a>
+<a href="#">PG</a>
+<a href="#">Hostels</a>
+<a href="#">Contact</a>
+</div>
+
+</div>
+
+<!-- SEARCH -->
+
+<div class="search-section">
+
+<div class="search-box">
+
+<input
+type="text"
+id="searchInput"
+placeholder="Search City, Area, Locality..."
+>
+
+<button>
+Search
+</button>
+
+</div>
+
+</div>
+
+<!-- MAIN -->
+
+<div class="main">
+
+<!-- FILTERS -->
+
+<div class="filters">
+
+<h3>Filters</h3>
+
+<select>
+<option>All BHK</option>
+<option>1 BHK</option>
+<option>2 BHK</option>
+<option>3 BHK</option>
+<option>4 BHK</option>
+</select>
+
+<select>
+<option>Property Type</option>
+<option>Apartment</option>
+<option>Flat</option>
+<option>Villa</option>
+<option>Room</option>
+</select>
+
+<select>
+<option>Furnished</option>
+<option>Yes</option>
+<option>No</option>
+</select>
+
+</div>
+
+<!-- PROPERTY LIST -->
+
+<div class="properties" id="propertyList">
+</div>
+
+<!-- MAP -->
+
+<div class="map-area">
+
+<div class="map-badge">
+Available Properties
+</div>
+
+<div id="map"></div>
+
+</div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+const map = L.map('map').setView([22.7196,75.8577],12);
+
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
+maxZoom:19
+}
+).addTo(map);
+
+L.marker([22.7196,75.8577])
+
+.addTo(map)
+.bindPopup("Sample Property");
+async function loadProperties() {
+
+  const propertyList =
+  document.getElementById("propertyList");
+
+  propertyList.innerHTML = "";
+
+  const snapshot =
+  await db.collection("properties").get();
+
+  snapshot.forEach(doc => {
+
+    const data = doc.data();
+
+    propertyList.innerHTML += `
+
+      <div class="property-card">
+
+        <img src="${data.imageUrl}" alt="Property">
+
+        <div class="property-content">
+
+          <h3>${data.propertyType}</h3>
+
+          <p>📍 ${data.location}</p>
+
+          <p>🪑 ${data.furnished}</p>
+
+          <div class="price">
+            ₹${data.price}/month
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
+
+  });
+
+}
+
+loadProperties();
+
+</script>
+
+</body>
+</html>
+```
